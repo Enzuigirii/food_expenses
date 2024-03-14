@@ -1,14 +1,17 @@
 """DB creation
 
 Revision ID: 17caba9a8c79
-Revises: 
+Revises:
 Create Date: 2023-09-14 15:02:30.396876
 
 """
-from typing import Sequence, Union
+from __future__ import annotations
 
-from alembic import op
+from typing import Sequence
+from typing import Union
+
 import sqlalchemy as sa
+from alembic import op
 
 
 # revision identifiers, used by Alembic.

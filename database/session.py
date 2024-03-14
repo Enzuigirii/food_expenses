@@ -1,6 +1,10 @@
-from typing import AsyncGenerator, Optional
+from __future__ import annotations
 
-from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+from typing import AsyncGenerator
+from typing import Optional
+
+from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from settings import DATABASE_URL
@@ -12,7 +16,7 @@ class SessionContextManager:
             DATABASE_URL,
             future=True,
             echo=True,
-            execution_options={"isolation_level": "AUTOCOMMIT"},
+            execution_options={'isolation_level': 'AUTOCOMMIT'},
         )
         self.async_session: AsyncSession = async_sessionmaker(self.engine, expire_on_commit=False, class_=AsyncSession)
 
@@ -23,7 +27,6 @@ class SessionContextManager:
         await self.async_session().close()
 
 
-async def get_async_session() ->  Optional[AsyncGenerator]:
+async def get_async_session() -> Optional[AsyncGenerator]:
     async with SessionContextManager() as session:
         yield session
-

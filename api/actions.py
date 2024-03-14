@@ -1,14 +1,21 @@
-from typing import Optional, Sequence
+from __future__ import annotations
+
+from typing import Optional
+from typing import Sequence
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.schemas import (ShowShipment, CreateShipment, 
-                         ShowProduct, CreateProduct,
-                         ReportRequest, ReportResponse,
-                         DeletedProductsResponse)
+from api.schemas import CreateProduct
+from api.schemas import CreateShipment
+from api.schemas import DeletedProductsResponse
+from api.schemas import ReportRequest
+from api.schemas import ReportResponse
+from api.schemas import ShowProduct
+from api.schemas import ShowShipment
 from database.dal import ShipmentsDAL
-from database.model import Shipments, Products
+from database.model import Products
+from database.model import Shipments
 
 
 class ShipmentRepository:
@@ -65,8 +72,8 @@ class ShipmentRepository:
                 shipment_num=shipment_num, **updated_shipment_params
             )
             return updated_shipment_num
-        
-    @classmethod    
+
+    @classmethod
     async def _delete_shipment_by_num(
         cls, shipment_num: str, session: AsyncSession
     ) -> Optional[Products]:
@@ -90,7 +97,7 @@ class ProductRepository:
             purchase_price=body.purchase_price,
             purchase_status=body.purchase_status,
             shipment_num=body.shipment_num
-        )   
+        )
         return ShowProduct(
             id=product.id,
             create_date=product.create_date,
@@ -101,8 +108,8 @@ class ProductRepository:
             purchase_status=product.purchase_status,
             shipment_num=product.shipment_num
         )
-        
-    @classmethod    
+
+    @classmethod
     async def _get_products_by_shipment_num(
         cls, shipment_num: str, session: AsyncSession
     ) -> Optional[Sequence[ShowProduct]]:
@@ -114,9 +121,9 @@ class ProductRepository:
             if product_models is not None:
                 products = [ShowProduct.model_validate(product) for product in product_models]
                 return products
-            return 
-            
-    @classmethod                
+            return
+
+    @classmethod
     async def _update_product(
         cls, updated_product_params: dict, product_id: UUID, session: AsyncSession
     ) -> Optional[Products]:
@@ -126,8 +133,8 @@ class ProductRepository:
                 product_id=product_id, **updated_product_params
             )
             return updated_product
-        
-    @classmethod    
+
+    @classmethod
     async def _delete_products_by_shipment_num(
         cls, shipment_num: str, session: AsyncSession
     ) -> Optional[Sequence[DeletedProductsResponse]]:
@@ -137,20 +144,20 @@ class ProductRepository:
                 shipment_num=shipment_num
             )
             if deleted_products is not None:
-                deleted_products = [{'deleted_products_id': id_} for id_ in deleted_products] 
+                deleted_products = [{'deleted_products_id': id_} for id_ in deleted_products]
                 return deleted_products
-            return 
+            return
 
-    
+
 class ReportRepository:
-    @classmethod 
+    @classmethod
     async def _get_spending_report(
         cls, body: ReportRequest, session: AsyncSession
     ) -> ReportResponse:
         async with session.begin():
             shipments_dal = ShipmentsDAL(session)
             report = await shipments_dal.get_spending_report(
-                date_from=body.date_from, 
+                date_from=body.date_from,
                 date_to=body.date_to
             )
             return report

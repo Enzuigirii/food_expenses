@@ -1,10 +1,17 @@
-from typing import Optional, Sequence
+from __future__ import annotations
+
+from typing import Optional
+from typing import Sequence
 from uuid import UUID
 
-from sqlalchemy import select, update, delete, func
+from sqlalchemy import delete
+from sqlalchemy import func
+from sqlalchemy import select
+from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.model import Shipments, Products
+from database.model import Products
+from database.model import Shipments
 
 
 class ShipmentsDAL:
@@ -35,18 +42,18 @@ class ShipmentsDAL:
         self.db_session.add(new_shipment)
         await self.db_session.flush()
         return new_shipment
-    
+
     async def get_shipment_by_num(self, shipment_num: str) -> Optional[Shipments]:
         query = (
             select(Shipments)
             .where(Shipments.shipment_num == shipment_num)
-            )
+        )
         result = await self.db_session.execute(query)
         shipmnet_row = result.fetchone()
         if shipmnet_row is not None:
             return shipmnet_row[0]
         return
-        
+
     async def update_shipment_by_num(self, shipment_num: str, **kwargs) -> Optional[UUID]:
         query = (
             update(Shipments)
@@ -59,7 +66,7 @@ class ShipmentsDAL:
         if updated_shipment_row is not None:
             return updated_shipment_row[0]
         return
-    
+
     async def delete_shipment_by_num(self, shipment_num: str) -> Optional[UUID]:
         query = (
             delete(Shipments)
@@ -71,7 +78,7 @@ class ShipmentsDAL:
         if deleted_shipment_rows is not None:
             return deleted_shipment_rows[0]
         return
-        
+
     async def create_product(
         self,
         product_name: str,
@@ -90,18 +97,18 @@ class ShipmentsDAL:
         self.db_session.add(new_product)
         await self.db_session.flush()
         return new_product
-    
+
     async def get_products_by_shipment_num(self, shipment_num: str) -> Optional[Sequence]:
         query = (
             select(Products)
             .where(Products.shipment_num == shipment_num)
-            )
+        )
         result = await self.db_session.scalars(query)
         product_rows = result.all()
         if product_rows is not None:
             return product_rows
         return
-    
+
     async def update_product(self, product_id: UUID, **kwargs) -> Optional[UUID]:
         query = (
             update(Products)
@@ -114,7 +121,7 @@ class ShipmentsDAL:
         if updated_product_row is not None:
             return updated_product_row[0]
         return
-    
+
     async def delete_products_by_shipment_num(self, shipment_num: str) -> Optional[Sequence]:
         query = (
             delete(Products)
@@ -126,8 +133,8 @@ class ShipmentsDAL:
         if deleted_product_rows is not None:
             return deleted_product_rows
         return
-        
-    async def get_spending_report(self, date_from: str, date_to: str) -> Optional[str]:
+
+    async def get_spending_report(self, date_from: str, date_to: str) -> dict:
         query = (
             select(
                 func.count(Shipments.shipment_num),
@@ -135,16 +142,16 @@ class ShipmentsDAL:
                 func.sum(Shipments.shipping_cost) + func.sum(Shipments.bonuses)
             )
             .where(Shipments.shipment_date.between(date_from, date_to))
-            .where(Shipments.shipment_status == "Заказ доставлен")
+            .where(Shipments.shipment_status == 'Заказ доставлен')
         )
         result = await self.db_session.execute(query)
         report_row = result.fetchone()
         if report_row is not None:
-            return { 
-                    "report": (
-                    f"Количество заказов: {report_row[0]}. "
-                    f"На сумму {round(report_row[1], 2)} ₽, "
-                    f"{round(report_row[2], 2)} ₽ с учётом трат бонусов."
+            return {
+                'report': (
+                    f'Количество заказов: {report_row[0]}. '
+                    f'На сумму {round(report_row[1], 2)} ₽, '
+                    f'{round(report_row[2], 2)} ₽ с учётом трат бонусов.'
                 )
             }
-        return { "report": "Ошибка в формировании отчёта." }
+        return {'report': 'Ошибка в формировании отчёта.'}
