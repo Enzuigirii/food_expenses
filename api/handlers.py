@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import FastAPI, APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException
 from fastapi import Depends
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
